@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class TwitterProducer   {
     //creat mathod to grep the token from file
     static String ReadFile(String x) throws FileNotFoundException {
-        File filepath = new File("/home/bayusamudra/access-token-twitter");
+        File filepath = new File("token file path");
         Scanner s = new Scanner(filepath);
         ArrayList<String> list = new ArrayList<>();
         HashMap<String, String> dict = new HashMap<>();
@@ -68,7 +68,6 @@ public class TwitterProducer   {
         //add a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("stopping aplication ...");
-            logger.info("shuting down client from twitter ...");
             client.stop();
             logger.info("closing producer ...");
             producer.close();
@@ -76,7 +75,6 @@ public class TwitterProducer   {
         }));
 
         //loop to send tweets to kafka
-        // on a different thread, or multiple different threads....
         while (!client.isDone()) {
             String msg = null;
             try {
@@ -87,11 +85,11 @@ public class TwitterProducer   {
             }
             if (msg != null) {
                 logger.info(msg);
-                producer.send(new ProducerRecord<String, String>("ml-tweets", null, msg), new Callback() {
+                producer.send(new ProducerRecord<String, String>("your-topic", null, msg), new Callback() {
                     @Override
                     public void onCompletion(RecordMetadata recordMetadata, Exception e) {
                         if (e != null) {
-                            logger.error("Check your producer", e);
+                            logger.error("Check your producer", e); //Throw an error
                         }
                     }
                 });
@@ -102,11 +100,9 @@ public class TwitterProducer   {
 
     public Client twitterClient(BlockingQueue<String> msgQueue){
 
-        /** Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth) */
+        /** Declare the host you want to connect to, and authentication (basic auth or oauth) */
         Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
-        // Optional: set up some track terms
-        hosebirdEndpoint.trackTerms(terms);
 
         // These secrets should be read from a config file
         Authentication hosebirdAuth = new OAuth1(consumerKey, consumerSecret, token, tokenSecret);
@@ -132,9 +128,9 @@ public class TwitterProducer   {
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         //create safe producer
-        properties.setProperty(ProducerConfig.ACKS_CONFIG, "all");
+        properties.setProperty(ProducerConfig.ACKS_CONFIG, "all"); //set acks to all
         properties.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "5");
-        properties.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
+        properties.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true"); //ensure there is no data duplicate
         properties.setProperty(ProducerConfig.RETRIES_CONFIG, Integer.toString(Integer.MAX_VALUE));
 
         //high trhoughput producer (at the expose of a bit of latency and CPU usage)
