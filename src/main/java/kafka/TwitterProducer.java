@@ -43,7 +43,7 @@ public class TwitterProducer   {
     String token = ReadFile("access token");
     String tokenSecret = ReadFile("access token secret");
 
-    List<String> terms = Lists.newArrayList("inter", "ucl");
+    List<String> terms = Lists.newArrayList("covid", "vaksin"); //set words you want to search in twitter
 
     //build constructure
     public TwitterProducer() throws FileNotFoundException {}
@@ -135,8 +135,8 @@ public class TwitterProducer   {
 
         //compression batch
         properties.setProperty(ProducerConfig.COMPRESSION_TYPE_CONFIG, "lz4");
-        properties.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20");
-        properties.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024));
+        properties.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20"); //set small delay
+        properties.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024)); //set batch size to 32kb
 
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(properties);
         return producer;
